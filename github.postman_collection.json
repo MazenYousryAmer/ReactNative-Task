@@ -1,0 +1,76 @@
+{
+	"id": "6f65cc74-a9e9-f9e3-e843-ef8d48058e2c",
+	"name": "github",
+	"description": "",
+	"order": [
+		"9ea5adb2-5b79-e04d-ebd2-f23699033218",
+		"51dbfccb-0df9-19c6-70a9-cdd2af7383bf"
+	],
+	"folders": [],
+	"folders_order": [],
+	"timestamp": 1660921539243,
+	"owner": "21761990",
+	"public": false,
+	"requests": [
+		{
+			"id": "51dbfccb-0df9-19c6-70a9-cdd2af7383bf",
+			"headers": "",
+			"headerData": [],
+			"url": "https://api.github.com/users/MohamedBassem",
+			"queryParams": [],
+			"pathVariables": {},
+			"pathVariableData": [],
+			"preRequestScript": null,
+			"method": "GET",
+			"collectionId": "6f65cc74-a9e9-f9e3-e843-ef8d48058e2c",
+			"data": null,
+			"dataMode": "params",
+			"name": "User Details",
+			"description": "",
+			"descriptionFormat": "html",
+			"time": 1660922106982,
+			"version": 2,
+			"responses": [],
+			"tests": null,
+			"currentHelper": "normal",
+			"helperAttributes": {}
+		},
+		{
+			"id": "9ea5adb2-5b79-e04d-ebd2-f23699033218",
+			"headers": "",
+			"headerData": [],
+			"url": "https://api.github.com/search/users?q=mohamed&page=1",
+			"queryParams": [
+				{
+					"key": "q",
+					"value": "mohamed",
+					"equals": true,
+					"description": "",
+					"enabled": true
+				},
+				{
+					"key": "page",
+					"value": "1",
+					"equals": true,
+					"description": "",
+					"enabled": true
+				}
+			],
+			"preRequestScript": null,
+			"pathVariables": {},
+			"pathVariableData": [],
+			"method": "GET",
+			"data": null,
+			"dataMode": "params",
+			"version": 2,
+			"tests": null,
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1660922209189,
+			"name": "Users",
+			"description": "",
+			"collectionId": "6f65cc74-a9e9-f9e3-e843-ef8d48058e2c",
+			"responses": []
+		}
+	]
+}
