@@ -1,20 +1,13 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import UserModel from '../Models/UserModel';
 import GithubList from '../Components/GithubList';
-import ErrorView from '../Components/ErrorView';
 import LoadingView from '../Components/LoadingView';
 import SearchInput from '../Components/SearchInput';
 import EmptyView from '../Components/EmptyView';
-
-// const usersTest = [
-//   { id: 0, name: 'Mazen' },
-//   { id: 1, name: 'Yousry' },
-//   { id: 2, name: 'Amer' },
-//   { id: 4, name: 'test' },
-// ];
 
 const Home = ({ navigation }) => {
   const [users, setUsers] = useState<UserModel>();
@@ -23,45 +16,84 @@ const Home = ({ navigation }) => {
   const [searchString, setSearchString] = useState<string>('');
   const [query, setQuery] = useState<string>('');
   const [pageNumber, setPageNumber] = useState<number>(1);
+  const [searchButtonClicked, setSearchButtonClicked] =
+    useState<boolean>(false);
+
+  async function persistData() {
+    try {
+      const usersToString = JSON.stringify(users);
+      const pageNumberToString = JSON.stringify(pageNumber);
+      await AsyncStorage.setItem('searchQuery', query);
+      await AsyncStorage.setItem('users', usersToString);
+      await AsyncStorage.setItem('pageNumber', pageNumberToString);
+
+      setSearchButtonClicked(false);
+    } catch (error) {
+      console.error('Error saving data:', error);
+    }
+  }
+
+  async function retreiveDataFromCache() {
+    try {
+      const searchQuery = await AsyncStorage.getItem('searchQuery');
+      const value = await AsyncStorage.getItem('users');
+      const pageNumberString = await AsyncStorage.getItem('pageNumber');
+      if (value && searchQuery && pageNumberString) {
+        setSearchString(searchQuery);
+        setQuery(searchQuery);
+
+        const convertedUser = JSON.parse(value);
+        setUsers(convertedUser);
+        const page = +pageNumberString;
+        setPageNumber(page);
+      }
+      return null; // Key does not exist
+    } catch (error) {
+      console.error('Error retreiving data:', error);
+    }
+  }
 
   async function fetchGithubUser() {
-    if (!query) return;
-    // inputChange(username);
     setIsError(false);
-    setIsLoading(true);
     try {
-      // const response = await fetch(`https://api.github.com/users/${username}`);
+      const encodedQuery = encodeURIComponent(query);
       const response = await fetch(
-        // `https://api.github.com/search/users?q=${username}&page=1`,
-        `https://api.github.com/search/users?q=${query}&page=${pageNumber}`,
+        `https://api.github.com/search/users?q=${encodedQuery}&page=${pageNumber}&per_page=20`,
       );
-      setIsLoading(false);
 
       if (!response.ok) {
-        // throw new Error(`User not found (Status: ${response.status})`);
         setIsError(true);
-        // console.error('Error fetching data:', error.message);
       }
 
       const data = (await response.json()) as UserModel;
       console.log(data);
-      // setTimeout(() => {
       if (pageNumber === 1) {
         setUsers(data);
       } else {
         appendUsers(data);
       }
-      // }, 10000);
     } catch (error) {
       setIsError(true);
-      // console.error('Error fetching data:', error.message);
+    } finally {
+      setIsLoading(false);
     }
   }
 
   useEffect(() => {
-    fetchGithubUser();
-    setIsLoading(false);
+    retreiveDataFromCache();
+  }, []);
+
+  useEffect(() => {
+    if (query !== '' && searchButtonClicked) {
+      fetchGithubUser();
+    }
+
+    // setIsLoading(false);
   }, [query, pageNumber, isLoading]);
+
+  useEffect(() => {
+    users && persistData();
+  }, [JSON.stringify(users)]);
 
   function inputChange(inputValue: string) {
     setSearchString(inputValue);
@@ -70,18 +102,13 @@ const Home = ({ navigation }) => {
   function onSearchPress() {
     setQuery(searchString);
     setPageNumber(1);
-    const allUsers = {
-      total_count: 0,
-      items: [],
-      incomplete_results: false,
-    };
-    setUsers(allUsers);
-    // fetchGithubUser();
+    setIsLoading(true);
+    setSearchButtonClicked(true);
   }
 
   function loadNextPage() {
+    setSearchButtonClicked(true);
     setPageNumber(pageNumber + 1);
-    // fetchGithubUser();
   }
 
   function appendUsers(data: UserModel) {
@@ -102,23 +129,19 @@ const Home = ({ navigation }) => {
           inputChange={(text: string) => inputChange(text)}
         />
       </View>
-
-      {/* <Header welcomeMessage={'Github React Native task'}></Header> */}
-      {!users || (users?.items?.length ?? 0) === 0 ? <EmptyView /> : null}
-      {isError ? <ErrorView /> : null}
+      {(!users || (users?.items?.length ?? 0) === 0) && !isLoading ? (
+        <EmptyView />
+      ) : null}
       {isLoading ? (
         <View style={styles.loadingContainer}>
           <LoadingView></LoadingView>
         </View>
       ) : (
-        // <View style={styles.innerContainer}>
         <GithubList
-          //style={styles.list}
           users={users?.items}
           navigation={navigation}
           onEndReached={loadNextPage}
         ></GithubList>
-        // </View>
       )}
     </View>
   );
@@ -135,9 +158,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignContent: 'center',
     justifyContent: 'center',
-    backgroundColor: 'black',
-    height: 200,
-    width: 200,
   },
   header: {
     height: 80,
@@ -148,7 +168,3 @@ const styles = StyleSheet.create({
 });
 
 export default Home;
-
-// elastic search
-// tries
-// useQuery for request caching

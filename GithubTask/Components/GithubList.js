@@ -1,8 +1,3 @@
-// import React from 'react';
-
-// import { View, StyleSheet } from 'react-native';
-// import GithubItem from './githubItem';
-
 import GithubItem from './GithubItem';
 import { StyleSheet, FlatList, View } from 'react-native';
 
@@ -38,22 +33,7 @@ const GithubList = ({ users, onEndReached, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // height: 100,
   },
 });
-
-// const GithubList = ({ users }) => {
-//   users = users.map((user, i) => {
-//     return <GithubItem key={i} user={user} />;
-//   });
-//   return <View style={styles.container}>{users}</View>;
-// };
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     marginVertical: 80,
-//   },
-// });
 
 export default GithubList;

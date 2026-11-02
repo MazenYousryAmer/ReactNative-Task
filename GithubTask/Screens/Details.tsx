@@ -10,9 +10,9 @@ const Details = ({ route }) => {
   const [userDetailsState, setUserDetails] = useState<UserDetails>();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isError, setIsError] = useState<boolean>(false);
-  const { id, login, avatar_url } = route.params.user;
+  const { id, login } = route.params.user;
 
-  async function fetchGithubUserDetails(username: string) {
+  async function fetchGithubUserDetails() {
     try {
       const response = await fetch(`https://api.github.com/users/${login}`);
 
@@ -24,32 +24,43 @@ const Details = ({ route }) => {
       setUserDetails(data);
     } catch (error) {
       setIsError(true);
+    } finally {
+      setIsLoading(false);
     }
   }
 
   useEffect(() => {
-    fetchGithubUserDetails(login);
-    setIsLoading(false);
+    fetchGithubUserDetails();
   }, []);
+
+  if (isError) {
+    return <ErrorView />;
+  }
 
   return (
     <View style={styles.container}>
-      {isError ? <ErrorView /> : null}
-      {isLoading ? (
-        <LoadingView></LoadingView>
+      {isLoading ? <LoadingView /> : null}
+      {isError ? (
+        <ErrorView />
       ) : (
         <View style={styles.container}>
-          <Text style={styles.text}>{login}</Text>
-          <Image
-            source={{
-              uri: `https://avatars.githubusercontent.com/u/${id}?v=4`,
-            }}
-            defaultSource={require('../assets/Profile.png')}
-            style={styles.logo}
-          />
-          <Text style={styles.text}>
-            {userDetailsState?.bio ? userDetailsState.bio : 'No bio available'}
-          </Text>
+          {!isLoading && <Text style={styles.text}>{login}</Text>}
+          {!isLoading && (
+            <Image
+              source={{
+                uri: `https://avatars.githubusercontent.com/u/${id}?v=4`,
+              }}
+              defaultSource={require('../assets/Profile.png')}
+              style={styles.logo}
+            />
+          )}
+          {!isLoading && (
+            <Text style={styles.text}>
+              {userDetailsState?.bio
+                ? userDetailsState.bio
+                : 'No bio available'}
+            </Text>
+          )}
         </View>
       )}
     </View>
